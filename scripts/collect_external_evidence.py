@@ -14,7 +14,6 @@ complete but is not is worse than one that is honestly short.
 
 from __future__ import annotations
 
-import base64
 import json
 import sys
 import time
@@ -226,7 +225,7 @@ def ip08_gateway() -> dict[str, Any]:
         "listener": GATEWAY,
         "accepted": accepted,
         "rate_limited": refused or "no 429 observed in 60 attempts",
-        "admin_ready": _text(f"http://localhost:9901/ready"),
+        "admin_ready": _text("http://localhost:9901/ready"),
     }
 
 
@@ -234,7 +233,7 @@ def _text(url: str) -> str:
     try:
         with urllib.request.urlopen(url, timeout=10) as response:
             return response.read(100).decode("utf-8", "replace").strip()
-    except Exception as error:  # noqa: BLE001 - evidence records the failure
+    except Exception as error:
         return f"unavailable: {type(error).__name__}"
 
 
@@ -280,7 +279,7 @@ def ip09_grafana_dashboards() -> dict[str, Any]:
     try:
         search = _get("http://localhost:3000/api/search?type=dash-db")
         live = [{"title": item.get("title"), "uid": item.get("uid")} for item in search]
-    except Exception as error:  # noqa: BLE001
+    except Exception as error:
         live = [{"error": f"{type(error).__name__}: {error}"}]
     return {"provisioned_files": provisioned, "dashboards_in_grafana": live}
 
@@ -295,7 +294,7 @@ def ip10_trace() -> dict[str, Any]:
     for service in services:
         try:
             traces = _get(f"{JAEGER}/api/traces?service={service}&limit=40")["data"]
-        except Exception:  # noqa: BLE001
+        except Exception:
             continue
         for trace in traces:
             names = {span["operationName"] for span in trace.get("spans", [])}
@@ -336,7 +335,7 @@ def main() -> None:
     for filename, collector in COLLECTORS.items():
         try:
             payload = collector()
-        except Exception as error:  # noqa: BLE001 - a failure is itself the evidence
+        except Exception as error:
             failed[filename] = f"{type(error).__name__}: {error}"
             print(f"skipped {filename}: {failed[filename]}")
             continue
