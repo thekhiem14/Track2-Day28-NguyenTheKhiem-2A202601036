@@ -193,6 +193,30 @@ Consumer group `lab28-pipeline` mới tạo cần thời gian join/rebalance, tr
 đủ 86 message. Khi demo: kích hoạt DAG một lần cho group ổn định **trước** khi bắt đầu
 trình bày, hoặc trigger lại nếu thấy `polled: 0`.
 
+## Tài liệu đi kèm
+
+| Tài liệu | Nội dung |
+|---|---|
+| [`../ANSWERS.md`](../ANSWERS.md) | Trade-off, 20 production gap, đóng góp, Q&A |
+| [`incident-record.md`](incident-record.md) | Biên bản sự cố Feast + chứng minh không mất/không trùng dữ liệu |
+| [`performance-profile.md`](performance-profile.md) | P50/P95/P99 ở 8 và 16 worker + phân tích nút thắt |
+| [`ip07-vllm-kaggle.md`](ip07-vllm-kaggle.md) | Vì sao vLLM trượt trên WSL2 và cách lấy evidence IP07 qua Kaggle |
+| [`demo-runbook.md`](demo-runbook.md) | Thứ tự trình bày |
+
+## Kiểm tra lại sau sự cố
+
+Toàn bộ battery được chạy **lại sau** khi inject sự cố Feast và khôi phục, tất cả vẫn đạt —
+bản thân điều này là bằng chứng recovery:
+
+```text
+uv run ruff check .                                        -> All checks passed
+uv run pytest starter-tests tests -q                       -> 87 passed
+uv run python scripts/verify_matrix.py                     -> 245 checks passed
+uv run python scripts/check_portability.py                 -> OK
+uv run python scripts/validate_manifests.py                -> passed
+uv run pytest integration-tests -m "not gpu and not langsmith" -q -> 56 passed, 16 deselected
+```
+
 ## Lệnh sinh evidence file
 
 ```text
