@@ -1,0 +1,32 @@
+# Local GPU override — chỉ chứa tham số bộ nhớ, không chứa bí mật.
+#
+# `compose.gpu.yaml` giữ nguyên như đề bài. File này thêm giới hạn phù hợp với
+# GPU 6 GiB (RTX 3060 Laptop), nơi màn hình đã chiếm sẵn khoảng 1 GiB:
+#
+#   --gpu-memory-utilization 0.80  -> ~4.9 GiB, nằm dưới phần VRAM còn trống
+#   --max-model-len 4096           -> giới hạn KV cache cho vừa phần còn lại
+#   --dtype half                   -> giống lệnh trong KAGGLE_GPU_EXTENSION.md
+#
+# Dùng:
+#   docker compose --env-file ports.template \
+#     -f compose.yaml -f compose.gpu.yaml -f compose.gpu.local.yaml \
+#     --profile full --profile gpu up -d vllm
+#
+# Máy có VRAM lớn hơn thì bỏ file này đi và dùng compose.gpu.yaml nguyên bản.
+
+services:
+  vllm:
+    command:
+      - --model
+      - ${LAB28_VLLM_MODEL_ID:-Qwen/Qwen3-1.7B}
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --dtype
+      - half
+      - --max-model-len
+      - "4096"
+      - --gpu-memory-utilization
+      - "0.80"
+      - --enforce-eager

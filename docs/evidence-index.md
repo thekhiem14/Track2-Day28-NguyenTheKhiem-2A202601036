@@ -70,27 +70,43 @@ chứng minh bằng các file evidence tương ứng ở bảng trên, thu bởi
 
 ## IP07 — vLLM thật
 
-Trạng thái: **PENDING** (đang dựng). Máy làm bài **có** GPU NVIDIA RTX 3060 Laptop
-(6 GiB VRAM) và Docker đã truy cập được GPU:
+Trạng thái: **UNVERIFIED (gate: gpu)**, kèm chẩn đoán đầy đủ dưới đây.
+
+Máy làm bài **có** GPU thật (RTX 3060 Laptop, 6 GiB) và Docker **có** thấy GPU:
 
 ```text
-docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi   -> thấy RTX 3060
+docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi  -> OK
 ```
 
-Cách chạy:
+Đã tải image `vllm/vllm-openai:v0.28.0` (28.8 GB) và chạy thử với cấu hình hạ bộ nhớ
+(`--dtype half --max-model-len 4096 --gpu-memory-utilization 0.80 --enforce-eager`,
+xem `compose.gpu.local.yaml`). Container **chết khi khởi tạo engine**:
 
 ```text
-docker compose --env-file ports.template -f compose.yaml -f compose.gpu.yaml \
-  --profile full --profile gpu up -d vllm
-uv run lab28 ready
-uv run pytest integration-tests -m gpu -q
+RuntimeError: UVA is not available   (vllm/v1/worker/gpu/buffer_utils.py:47)
 ```
 
-Ràng buộc cần biết: VRAM 6 GiB và màn hình đã chiếm ~1 GiB, nên chỉ vừa model nhỏ.
-`ports.template` đang đặt `LAB28_VLLM_MODEL_ID=Qwen/Qwen3-1.7B` là lựa chọn phù hợp.
+Nguyên nhân gốc đã kiểm chứng bằng chính image vLLM:
+
+| Bước | Quan sát |
+|---|---|
+| Kernel trong container | `6.6.87.2-microsoft-standard-WSL2` |
+| `vllm.platforms.interface.in_wsl()` | `True` (uname chứa `microsoft`) |
+| `is_pin_memory_available()` | `False` — vLLM chủ động tắt theo giới hạn NVIDIA cho CUDA trên WSL |
+| `is_uva_available()` | `False` |
+| `UvaBuffer.__init__` | raise, vì 0.28 **bắt buộc** UVA |
+
+Đây **không** phải lỗi VRAM: `torch.empty(..., pin_memory=True)` vẫn chạy được trong
+container, nhưng vLLM tự từ chối dựa trên việc phát hiện WSL. Vì vậy giảm model, giảm
+`gpu-memory-utilization` hay `--enforce-eager` đều không cứu được.
+
+Kết luận: Docker Desktop trên Windows chạy container trong máy ảo WSL2, nên **không thể**
+chạy vLLM 0.28 tại chỗ. Cần kernel không phải WSL — Kaggle, máy Linux thật hoặc cluster.
+Các bước lấy evidence IP07 qua Kaggle nằm ở [`ip07-vllm-kaggle.md`](ip07-vllm-kaggle.md).
 
 Gate không thể lách: `probe_identity` đòi **đồng thời** `/version` của chính vLLM và
-metric family `vllm:`. Một server chỉ bắt chước OpenAI API sẽ trượt.
+metric family `vllm:`. Một server chỉ bắt chước OpenAI API sẽ trượt — và đó là lý do
+không có đường vòng nào ở đây.
 
 ## IP10 — trace liên tục
 
