@@ -195,6 +195,8 @@ MLflow đang restart, vì khi đó nó **không còn `/ready` để nói cho ai 
 | 16 | Argo CD `selfHeal` + `prune` không có sync window | Sync ngoài ý muốn giữa giờ cao điểm | Sync window, phê duyệt cho môi trường prod |
 | 17 | GPU là điểm chết đơn lẻ | vLLM chết là `/ask` chết | Nhiều replica + hàng đợi, hoặc model dự phòng nhỏ hơn |
 | 18 | Chưa có soak test | Rò rỉ bộ nhớ chỉ lộ sau nhiều giờ | Chạy tải dài và theo dõi RSS theo thời gian |
+| 19 | Topic `model.events` khai báo nhưng **không có producer** | Không có audit trail dạng sự kiện cho promote/rollback; consumer nào subscribe sẽ chờ mãi | `ReleaseRegistry.promote/rollback` publish `ModelLifecycleEvent` (contract và publisher đã sẵn sàng), hoặc bỏ topic nếu không dùng |
+| 20 | `/ready` gọi 5 probe tuần tự, không cache | Một dependency chết kéo chậm readiness của cả pod; xem `docs/performance-profile.md` | Cache theo TTL ngắn, chạy probe song song, timeout riêng cho từng probe |
 
 ---
 
@@ -251,5 +253,26 @@ ID là `uuid5(ID_NAMESPACE, doc_id)` nên upsert đè đúng một điểm; Feas
 OpenAI-compatible không sinh được cả hai.
 
 **Rollback model không sửa code bằng cách nào?**
-`champion` là alias. `model_registry.rollback()` chuyển alias về version liền trước và
-phát `ModelLifecycleEvent(action="rolled_back")` lên topic `model.events`.
+`champion` là alias. `model_registry.rollback()` tìm version cao nhất **thấp hơn** version
+hiện tại rồi chuyển alias sang đó. Serving path đọc alias nên nhận thay đổi ở lần refresh
+kế tiếp — không sửa code, không build lại image.
+
+Đã chạy thật:
+
+```text
+uv run lab28 inspect   -> lab28-rag-release v2 is champion
+uv run lab28 rollback  -> champion moved from v2 to v1
+uv run lab28 inspect   -> lab28-rag-release v1 is champion
+```
+
+Hai điều cần nói đúng nếu bị hỏi sâu:
+
+1. Contract `ModelLifecycleEvent` và topic `model.events` **đã được khai báo**, và
+   `event_bus` chấp nhận kiểu này, nhưng **chưa có thành phần nào thực sự publish** sự
+   kiện đó. Đã kiểm chứng bằng cách đọc `model.events` sau khi rollback: topic rỗng.
+   Xem mục 3, dòng 19.
+2. `promote()` có tăng `lab28_release_transitions_total{action=...}`, nhưng counter đó
+   nằm **trong tiến trình thực hiện lệnh**. Chạy `lab28 rollback` từ host là một tiến
+   trình CLI sống vài giây, Prometheus không kịp scrape — nên `/metrics` của container
+   API vẫn trống. Bằng chứng bền vững của rollback là **alias trong MLflow**, không phải
+   counter này.
