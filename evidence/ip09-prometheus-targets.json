@@ -56,9 +56,9 @@
     },
     {
       "job": "lab28-vllm-optional",
-      "instance": "snapshot-brakes-regulation-deluxe.trycloudflare.com:443",
+      "instance": "host.docker.internal:8001",
       "health": "down",
-      "last_error": "Get \"https://snapshot-brakes-regulation-deluxe.trycloudflare.com:443/metrics\": dial tcp: lookup snapshot-brakes-regulation-deluxe.trycloudflare.com on 127.0.0.11:53: no such host"
+      "last_error": "Get \"http://host.docker.internal:8001/metrics\": dial tcp 192.168.65.254:8001: connect: connection refused"
     }
   ],
   "up_count": 9,
