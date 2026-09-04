@@ -43,5 +43,9 @@ scrape_configs:
     static_configs: [{targets: ["prometheus:9090"]}]
 
   - job_name: lab28-vllm-optional
-    static_configs: [{targets: ["host.docker.internal:8001"]}]
+    # Endpoint suy luan co the o local hoac o xa (Kaggle/cluster), va hai truong
+    # hop dung scheme khac nhau. Doc tu file_sd de doi dia chi ma khong phai sua
+    # config nay; `__scheme__` cho phep dat http hay https theo tung target.
+    file_sd_configs:
+      - files: [/etc/prometheus/targets/vllm.json]
     metrics_path: /metrics

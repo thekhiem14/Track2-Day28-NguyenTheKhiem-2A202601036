@@ -250,7 +250,15 @@ ID là `uuid5(ID_NAMESPACE, doc_id)` nên upsert đè đúng một điểm; Feas
 
 **Vì sao không thể "giả" IP07?**
 `probe_identity` đòi `/version` của vLLM **và** metric `vllm:`. Một proxy
-OpenAI-compatible không sinh được cả hai.
+OpenAI-compatible không sinh được cả hai. Em đã nối endpoint thật: vLLM `0.26.0` trên
+Kaggle T4 phục vụ `Qwen/Qwen3-4B-Instruct-2507`, `lab28 ready` trả `ready`, và một lần
+`/ask` chạy trọn với `degraded: false`. Bằng chứng bền vững còn lại sau khi tunnel hết
+hạn là MLflow release v6 và span `lab28.vllm.chat_completion` trong trace
+`463242b83527480aa428478ce64a6c04` (đủ 11/11 span bắt buộc).
+
+Trên máy Windows thì **không** chạy được vLLM tại chỗ: Docker Desktop chạy container
+trong WSL2, vLLM phát hiện WSL rồi tắt pinned memory theo giới hạn NVIDIA, còn
+`UvaBuffer` của 0.28 lại bắt buộc UVA nên raise. Chi tiết ở `docs/ip07-vllm-kaggle.md`.
 
 **Rollback model không sửa code bằng cách nào?**
 `champion` là alias. `model_registry.rollback()` tìm version cao nhất **thấp hơn** version

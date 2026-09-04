@@ -1,17 +1,20 @@
 {
-  "gateway_url": "http://localhost:8080",
-  "route": "/health",
-  "configured_rps": 10,
-  "requests_sent": 30,
-  "accepted": 10,
-  "rejected": 20,
-  "rate_limited_stat": 575.0,
-  "sample_200": {
+  "listener": "http://localhost:8080",
+  "accepted": {
+    "path": "/health",
     "status": 200,
-    "x-request-id": "de4dc0f5-7018-9992-b26e-5682c96bdaf1"
+    "x_request_id": "e54dc2f9-c142-9fb8-899b-32d96c66e19e",
+    "x_envoy_decorator_operation": "lab28.gateway.request",
+    "server": "envoy",
+    "body": "{\"status\":\"alive\",\"service\":\"lab28-api\"}"
   },
-  "sample_429": {
+  "rate_limited": {
+    "path": "/api/v1/feedback",
     "status": 429,
-    "x-request-id": "58209e96-e143-95fb-a469-e53def5520dd"
-  }
+    "x_request_id": "2464a0fc-e8f4-91f8-b5d6-799610be6be5",
+    "x_envoy_decorator_operation": "lab28.gateway.request",
+    "server": "envoy",
+    "body": "local_rate_limited"
+  },
+  "admin_ready": "LIVE"
 }

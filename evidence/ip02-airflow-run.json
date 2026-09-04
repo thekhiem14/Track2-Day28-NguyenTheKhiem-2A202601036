@@ -1,48 +1,143 @@
 {
-  "dag_id": "lab28_ingestion_pipeline",
-  "dag_run_id": "it-9bad7cbc",
-  "state": "success",
-  "conf": {
-    "traceparent": "00-48d5bc58df5947258e560f6b96e6808d-f505c9e36046403e-01"
+  "health": {
+    "metadatabase": {
+      "status": "healthy"
+    },
+    "scheduler": {
+      "status": "healthy",
+      "latest_scheduler_heartbeat": "2026-09-04T08:32:21.213742+00:00"
+    },
+    "triggerer": {
+      "status": "healthy",
+      "latest_triggerer_heartbeat": "2026-09-04T08:32:21.949860+00:00"
+    },
+    "dag_processor": {
+      "status": "healthy",
+      "latest_dag_processor_heartbeat": "2026-09-04T08:32:20.592873+00:00"
+    }
   },
-  "task_instances": [
+  "latest_successful_run": {
+    "dag_id": "lab28_ingestion_pipeline",
+    "dag_run_id": "it-63a7bd89",
+    "state": "success",
+    "logical_date": null,
+    "start_date": "2026-09-04T08:23:36.551983Z",
+    "end_date": "2026-09-04T08:23:47.431958Z",
+    "task_states": {
+      "drain_kafka_into_delta": "success",
+      "refresh_online_features": "success",
+      "index_new_documents": "success",
+      "announce_processed_batch": "success"
+    },
+    "drain_result": {
+      "run_id": "it-63a7bd89",
+      "traceparent": "00-23ece593a73c44449d1966f869be0cb3-31ff66754f294436-01",
+      "polled": 0,
+      "processed": 0,
+      "dead_lettered": 0
+    },
+    "_rank": 0
+  },
+  "recent_runs": [
     {
-      "task_id": "drain_kafka_into_delta",
-      "state": "success",
-      "try_number": 1
+      "dag_run_id": "it-63a7bd89",
+      "state": "success"
     },
     {
-      "task_id": "refresh_online_features",
-      "state": "success",
-      "try_number": 1
+      "dag_run_id": "it-58ad2a57",
+      "state": "success"
     },
     {
-      "task_id": "index_new_documents",
-      "state": "success",
-      "try_number": 1
+      "dag_run_id": "it-cdf54538",
+      "state": "success"
     },
     {
-      "task_id": "announce_processed_batch",
-      "state": "success",
-      "try_number": 1
+      "dag_run_id": "it-9d9d52ae",
+      "state": "success"
+    },
+    {
+      "dag_run_id": "it-244f69a0",
+      "state": "success"
     }
   ],
-  "asset_events": [
-    {
-      "uri": "lab28://delta/documents",
-      "timestamp": "2026-09-03T17:50:57.438008Z"
-    },
-    {
-      "uri": "lab28://delta/feedback",
-      "timestamp": "2026-09-03T17:50:57.442434Z"
-    },
-    {
-      "uri": "lab28://qdrant/lab28_documents",
-      "timestamp": "2026-09-03T17:51:04.039580Z"
-    },
-    {
-      "uri": "lab28://feast/asker_activity",
-      "timestamp": "2026-09-03T17:51:04.818151Z"
-    }
-  ]
+  "asset_events": {
+    "asset_events": [
+      {
+        "id": 83,
+        "asset_id": 4,
+        "uri": "lab28://qdrant/lab28_documents",
+        "name": "lab28://qdrant/lab28_documents",
+        "group": "asset",
+        "extra": {},
+        "source_task_id": "index_new_documents",
+        "source_dag_id": "lab28_ingestion_pipeline",
+        "source_run_id": "it-63a7bd89",
+        "source_map_index": -1,
+        "created_dagruns": [],
+        "timestamp": "2026-09-04T08:23:45.172466Z",
+        "partition_key": null
+      },
+      {
+        "id": 82,
+        "asset_id": 3,
+        "uri": "lab28://feast/asker_activity",
+        "name": "lab28://feast/asker_activity",
+        "group": "asset",
+        "extra": {},
+        "source_task_id": "refresh_online_features",
+        "source_dag_id": "lab28_ingestion_pipeline",
+        "source_run_id": "it-63a7bd89",
+        "source_map_index": -1,
+        "created_dagruns": [],
+        "timestamp": "2026-09-04T08:23:43.806423Z",
+        "partition_key": null
+      },
+      {
+        "id": 81,
+        "asset_id": 1,
+        "uri": "lab28://delta/feedback",
+        "name": "lab28://delta/feedback",
+        "group": "asset",
+        "extra": {},
+        "source_task_id": "drain_kafka_into_delta",
+        "source_dag_id": "lab28_ingestion_pipeline",
+        "source_run_id": "it-63a7bd89",
+        "source_map_index": -1,
+        "created_dagruns": [],
+        "timestamp": "2026-09-04T08:23:42.135677Z",
+        "partition_key": null
+      },
+      {
+        "id": 80,
+        "asset_id": 2,
+        "uri": "lab28://delta/documents",
+        "name": "lab28://delta/documents",
+        "group": "asset",
+        "extra": {},
+        "source_task_id": "drain_kafka_into_delta",
+        "source_dag_id": "lab28_ingestion_pipeline",
+        "source_run_id": "it-63a7bd89",
+        "source_map_index": -1,
+        "created_dagruns": [],
+        "timestamp": "2026-09-04T08:23:42.131647Z",
+        "partition_key": null
+      },
+      {
+        "id": 79,
+        "asset_id": 3,
+        "uri": "lab28://feast/asker_activity",
+        "name": "lab28://feast/asker_activity",
+        "group": "asset",
+        "extra": {},
+        "source_task_id": "refresh_online_features",
+        "source_dag_id": "lab28_ingestion_pipeline",
+        "source_run_id": "it-58ad2a57",
+        "source_map_index": -1,
+        "created_dagruns": [],
+        "timestamp": "2026-09-04T08:23:32.517807Z",
+        "partition_key": null
+      }
+    ],
+    "total_entries": 83
+  }
 }

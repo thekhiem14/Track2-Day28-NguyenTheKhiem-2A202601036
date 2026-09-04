@@ -1,25 +1,267 @@
 {
-  "entity": {
-    "asker_id": "it-j1-7050996e"
-  },
-  "feature_service": "asker_serving_v1",
-  "features": {
-    "schema_version": "1",
-    "asker_id": "it-j1-7050996e",
-    "feedback_count": 1,
-    "avg_rating": 5.0,
-    "negative_ratio": 0.0,
-    "last_event_ts": "2026-09-03T17:50:43Z",
-    "delta_version": 12
-  },
-  "statuses": {
-    "asker_id": "PRESENT",
-    "delta_version": "PRESENT",
-    "feedback_count": "PRESENT",
-    "negative_ratio": "PRESENT",
-    "avg_rating": "PRESENT"
-  },
-  "degraded": false,
-  "freshness_seconds": 28.464554,
-  "lookup_ms": 163.1305000046268
+  "feature_view": "asker_activity_v1",
+  "feature_refs": [
+    "asker_activity_v1:feedback_count",
+    "asker_activity_v1:avg_rating",
+    "asker_activity_v1:negative_ratio",
+    "asker_activity_v1:delta_version"
+  ],
+  "health": "200 OK",
+  "reads": [
+    {
+      "asker_id": "asker-001",
+      "request": {
+        "features": [
+          "asker_activity_v1:feedback_count",
+          "asker_activity_v1:avg_rating",
+          "asker_activity_v1:negative_ratio",
+          "asker_activity_v1:delta_version"
+        ],
+        "entities": {
+          "asker_id": [
+            "asker-001"
+          ]
+        },
+        "full_feature_names": false
+      },
+      "response": {
+        "results": [
+          {
+            "values": [
+              "asker-001"
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "1970-01-01T00:00:00Z"
+            ]
+          },
+          {
+            "values": [
+              20
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:56Z"
+            ]
+          },
+          {
+            "values": [
+              2
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:56Z"
+            ]
+          },
+          {
+            "values": [
+              0.0
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:56Z"
+            ]
+          },
+          {
+            "values": [
+              5.0
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:56Z"
+            ]
+          }
+        ],
+        "metadata": {
+          "feature_names": [
+            "asker_id",
+            "delta_version",
+            "feedback_count",
+            "negative_ratio",
+            "avg_rating"
+          ]
+        }
+      }
+    },
+    {
+      "asker_id": "asker-002",
+      "request": {
+        "features": [
+          "asker_activity_v1:feedback_count",
+          "asker_activity_v1:avg_rating",
+          "asker_activity_v1:negative_ratio",
+          "asker_activity_v1:delta_version"
+        ],
+        "entities": {
+          "asker_id": [
+            "asker-002"
+          ]
+        },
+        "full_feature_names": false
+      },
+      "response": {
+        "results": [
+          {
+            "values": [
+              "asker-002"
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "1970-01-01T00:00:00Z"
+            ]
+          },
+          {
+            "values": [
+              20
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:56Z"
+            ]
+          },
+          {
+            "values": [
+              2
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:56Z"
+            ]
+          },
+          {
+            "values": [
+              0.0
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:56Z"
+            ]
+          },
+          {
+            "values": [
+              3.5
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:56Z"
+            ]
+          }
+        ],
+        "metadata": {
+          "feature_names": [
+            "asker_id",
+            "delta_version",
+            "feedback_count",
+            "negative_ratio",
+            "avg_rating"
+          ]
+        }
+      }
+    },
+    {
+      "asker_id": "asker-003",
+      "request": {
+        "features": [
+          "asker_activity_v1:feedback_count",
+          "asker_activity_v1:avg_rating",
+          "asker_activity_v1:negative_ratio",
+          "asker_activity_v1:delta_version"
+        ],
+        "entities": {
+          "asker_id": [
+            "asker-003"
+          ]
+        },
+        "full_feature_names": false
+      },
+      "response": {
+        "results": [
+          {
+            "values": [
+              "asker-003"
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "1970-01-01T00:00:00Z"
+            ]
+          },
+          {
+            "values": [
+              20
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:57Z"
+            ]
+          },
+          {
+            "values": [
+              2
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:57Z"
+            ]
+          },
+          {
+            "values": [
+              0.5
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:57Z"
+            ]
+          },
+          {
+            "values": [
+              2.5
+            ],
+            "statuses": [
+              "PRESENT"
+            ],
+            "event_timestamps": [
+              "2026-09-03T17:36:57Z"
+            ]
+          }
+        ],
+        "metadata": {
+          "feature_names": [
+            "asker_id",
+            "delta_version",
+            "feedback_count",
+            "negative_ratio",
+            "avg_rating"
+          ]
+        }
+      }
+    }
+  ]
 }

@@ -12,7 +12,8 @@ tương ứng).
 | OS | Windows 11, Docker Desktop (engine 29.2.0) |
 | Phần cứng | 20 CPU, 16 GiB RAM, ~58 GiB trống |
 | Profile Compose | `full` — 14 service, tất cả `running`, các service có healthcheck đều `healthy` |
-| Không có | GPU cho vLLM; cluster Kubernetes; credential LangSmith |
+| GPU suy luận | Kaggle T4 + cloudflare quick tunnel (tạm thời, đã hết hạn sau buổi chạy) |
+| Không có | cluster Kubernetes; credential LangSmith |
 
 Dựng lại:
 
@@ -29,14 +30,14 @@ uv run lab28 seed --via-gateway
 |---|---|---|---|
 | IP01 | HTTP → Kafka | **PASS** | `evidence/ip01-kafka-consume.json`: message trên `data.raw` có `traceparent` + `idempotency-key`, và **key của message trùng đúng header `idempotency-key`** |
 | IP02 | Kafka → Airflow 3 | **PASS** | `evidence/ip02-airflow-run.json`: DAG run `success`, cả 4 task xanh; `polled: 86, processed: 22, dead_lettered: 0` |
-| IP03 | Airflow/Spark → Delta | **PASS** | `evidence/ip03-delta-history.json`: `feedback` v1 / 8 rows, `documents` v1 / 14 rows, `last_operation: MERGE`, có time travel |
+| IP03 | Airflow/Spark → Delta | **PASS** | `evidence/ip03-delta-history.json`: `last_operation: MERGE`, version tăng đơn điệu, có time travel (lần chạy cuối: `feedback` v17/23 rows, `documents` v11/20 rows) |
 | IP04 | Delta → Feast | **PASS** | `evidence/ip04-feast-online.json`: `/get-online-features` trả `results` cho `asker-001/2/3` |
-| IP05 | Delta → Qdrant | **PASS** | `evidence/ip05-qdrant-search.json`: collection `lab28_documents`, 14 points, embedding model ghim kèm revision |
-| IP06 | Eval → MLflow Registry | **PASS** | `evidence/ip06-mlflow-release.json`: `lab28-rag-release` v2 giữ alias `champion` |
-| IP07 | RAG → vLLM thật | xem mục "IP07" bên dưới | `evidence/ip07-vllm-identity.json` |
+| IP05 | Delta → Qdrant | **PASS** | `evidence/ip05-qdrant-search.json`: collection `lab28_documents`, 20 points, embedding model ghim kèm revision |
+| IP06 | Eval → MLflow Registry | **PASS** | `evidence/ip06-mlflow-release.json`: `lab28-rag-release` v6 giữ alias `champion`, ghi đúng `vllm_model_id` |
+| IP07 | RAG → vLLM thật | **PASS** (xác minh sống 2026-09-03, tunnel đã hết hạn — xem mục "IP07") | MLflow release v6 + span `lab28.vllm.chat_completion` |
 | IP08 | Client → Envoy | **PASS** | `evidence/ip08-gateway.json`: `200` và `429` **đều có `x-request-id` riêng**; `x-envoy-decorator-operation: lab28.gateway.request` |
 | IP09 | → Prometheus/Grafana | **PASS** | `evidence/ip09-prometheus-targets.json`: 9/10 target `up` (chỉ `lab28-vllm-optional` down), 2 alert rule đã nạp: `Lab28ApiUnavailable`, `Lab28HighErrorRatio` |
-| IP10 | → OTLP trace | xem mục "IP10" bên dưới | `evidence/ip10-trace.json` |
+| IP10 | → OTLP trace | **PASS** | `evidence/ip10-trace.json`: trace `463242b83527480aa428478ce64a6c04`, 34 span, **11/11** span bắt buộc |
 
 ### Kết quả 5 critical journey
 
@@ -70,63 +71,104 @@ chứng minh bằng các file evidence tương ứng ở bảng trên, thu bởi
 
 ## IP07 — vLLM thật
 
-Trạng thái: **UNVERIFIED (gate: gpu)**, kèm chẩn đoán đầy đủ dưới đây.
+Trạng thái: **PASS**, xác minh sống ngày 2026-09-03 qua endpoint Kaggle T4 + cloudflare
+quick tunnel. Tunnel là **tạm thời** nên đã hết hạn sau buổi chạy; vì vậy
+`evidence/ip07-vllm-identity.json` hiện ghi `reachable: false` — đó là kết quả thật ở
+thời điểm thu lại, **không** sửa tay thành `true`.
 
-Máy làm bài **có** GPU thật (RTX 3060 Laptop, 6 GiB) và Docker **có** thấy GPU:
+Ba tín hiệu gate đã quan sát trực tiếp khi endpoint còn sống:
 
 ```text
-docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi  -> OK
+GET /version    -> {"version":"0.26.0"}
+GET /v1/models  -> {"id":"Qwen/Qwen3-4B-Instruct-2507", "owned_by":"vllm", ...}
+GET /metrics    -> vllm:estimated_flops_per_gpu_total{model_name="Qwen/Qwen3-4B-Instruct-2507"} ...
+GET /health     -> 200
 ```
 
-Đã tải image `vllm/vllm-openai:v0.28.0` (28.8 GB) và chạy thử với cấu hình hạ bộ nhớ
-(`--dtype half --max-model-len 4096 --gpu-memory-utilization 0.80 --enforce-eager`,
-xem `compose.gpu.local.yaml`). Container **chết khi khởi tạo engine**:
+`lab28 ready` khi đó trả **`ready`**, cả 5 probe xanh, dòng vLLM ghi
+`vLLM identity confirmed`.
+
+Một lần `/ask` qua gateway chạy trọn vẹn:
+
+```text
+question   : "Phan biet /health, /ready va /startup khac nhau the nao?"
+answer     : có trích dẫn nguồn [1], nội dung đúng
+trace_id   : f5d7220c29aa27e3f302d8dbbcadaf10
+model      : Qwen/Qwen3-4B-Instruct-2507
+mlflow     : v6
+degraded   : False
+sources    : doc-health-semantics, doc-ip08-gateway, doc-ip02-airflow
+latency    : feature 5.8ms | retrieval 52.4ms | llm 3954.0ms | total 4206.6ms
+```
+
+**Hai bằng chứng bền vững vẫn còn kiểm tra được sau khi tunnel chết:**
+
+1. MLflow `lab28-rag-release` **v6** giữ alias `champion`, ghi
+   `vllm_model_id = Qwen/Qwen3-4B-Instruct-2507` — chạy `uv run lab28 inspect` để xem.
+2. Trace `463242b83527480aa428478ce64a6c04` trong Jaeger có span
+   **`lab28.vllm.chat_completion`**. Span đó chỉ tồn tại khi client thực sự gọi được
+   endpoint suy luận.
+
+`pytest integration-tests -m gpu` chạy khi endpoint còn sống: **9 passed**. Sáu test còn
+lại (4 error trace-coverage, `test_the_gateway_stops_routing_to_a_pod_that_is_not_ready`,
+`test_the_inference_endpoint_is_scraped`) rơi vào cuối lần chạy dài 1 giờ 51 phút, đúng
+lúc session Kaggle hết hạn. Muốn đóng nốt thì mở lại tunnel rồi chạy lại nhóm test đó.
+
+Ghi chú độ trễ: `llm 3954ms` vượt xa budget 500ms. Nguyên nhân là model đi qua tunnel
+công cộng từ Kaggle, không phải lỗi hệ thống — nhưng đúng là lý do vì sao endpoint suy
+luận ở xa không dùng làm baseline SLO được.
+
+### Vì sao không chạy được vLLM ngay trên máy này
+
+Máy có GPU thật (RTX 3060 Laptop, 6 GiB) và Docker thấy được GPU, nhưng container vLLM
+0.28 chết khi khởi tạo engine:
 
 ```text
 RuntimeError: UVA is not available   (vllm/v1/worker/gpu/buffer_utils.py:47)
 ```
 
-Nguyên nhân gốc đã kiểm chứng bằng chính image vLLM:
+Nguyên nhân gốc, kiểm chứng bằng chính image vLLM:
 
 | Bước | Quan sát |
 |---|---|
 | Kernel trong container | `6.6.87.2-microsoft-standard-WSL2` |
-| `vllm.platforms.interface.in_wsl()` | `True` (uname chứa `microsoft`) |
+| `in_wsl()` | `True` (uname chứa `microsoft`) |
 | `is_pin_memory_available()` | `False` — vLLM chủ động tắt theo giới hạn NVIDIA cho CUDA trên WSL |
 | `is_uva_available()` | `False` |
 | `UvaBuffer.__init__` | raise, vì 0.28 **bắt buộc** UVA |
 
-Đây **không** phải lỗi VRAM: `torch.empty(..., pin_memory=True)` vẫn chạy được trong
-container, nhưng vLLM tự từ chối dựa trên việc phát hiện WSL. Vì vậy giảm model, giảm
-`gpu-memory-utilization` hay `--enforce-eager` đều không cứu được.
+Không phải lỗi VRAM: `torch.empty(..., pin_memory=True)` vẫn chạy được trong container.
+Docker Desktop trên Windows chạy container trong máy ảo WSL2, nên cần kernel khác — đó
+là lý do dùng Kaggle. Quy trình đầy đủ ở [`ip07-vllm-kaggle.md`](ip07-vllm-kaggle.md).
 
-Kết luận: Docker Desktop trên Windows chạy container trong máy ảo WSL2, nên **không thể**
-chạy vLLM 0.28 tại chỗ. Cần kernel không phải WSL — Kaggle, máy Linux thật hoặc cluster.
-Các bước lấy evidence IP07 qua Kaggle nằm ở [`ip07-vllm-kaggle.md`](ip07-vllm-kaggle.md).
-
-Gate không thể lách: `probe_identity` đòi **đồng thời** `/version` của chính vLLM và
-metric family `vllm:`. Một server chỉ bắt chước OpenAI API sẽ trượt — và đó là lý do
-không có đường vòng nào ở đây.
+Trên Kaggle cũng gặp một lỗi nữa đáng ghi: `torchcodec` ném `OSError` vì thiếu
+`libnvrtc.so.13` (nó build cho CUDA 13, môi trường chạy CUDA 12), trong khi vLLM chỉ bọc
+import đó bằng `except (ImportError, RuntimeError)` — không bắt `OSError`. Gỡ
+`torchcodec` là xong, vì khi đó import ném `ModuleNotFoundError` và guard bắt được.
 
 ## IP10 — trace liên tục
 
-Trạng thái: **PARTIAL**. `evidence/ip10-trace.json` ghi trace tốt nhất tìm được trong
-Jaeger: **6/11** span bắt buộc.
+Trạng thái: **PASS — 11/11 span bắt buộc** trên một trace duy nhất.
 
-Đã có: `lab28.gateway.request`, `lab28.api.ingest`, `lab28.kafka.produce`,
-`lab28.kafka.consume`, `lab28.airflow.dag`, `lab28.spark.delta_merge` — tức là **toàn
-bộ nhánh ingestion** đã liên tục từ gateway tới Delta.
+```text
+trace_id  : 463242b83527480aa428478ce64a6c04
+span_count: 34
+```
 
-Còn thiếu 5 span, tất cả đều nằm trên đường `/ask`: `lab28.api.ask`,
-`lab28.feast.get_online_features`, `lab28.qdrant.query`, `lab28.mlflow.resolve_release`,
-`lab28.vllm.chat_completion`. Lý do là `/ask` chưa chạy trọn vẹn được khi vLLM chưa bật —
-đúng theo thiết kế ở `pipeline.py`: inference là dependency **duy nhất không có degraded
-path**, không có model thì không có câu trả lời. Sau khi IP07 bật, một lần `/ask` thành
-công sẽ khép đủ 11 span.
+Đủ cả 11 span mà `contracts/integration-matrix.yaml` yêu cầu:
 
-Nhánh LangSmith của IP10: **UNVERIFIED** — không có `LANGSMITH_API_KEY` trong môi
-trường. Đây là gate theo môi trường mà `contracts/integration-matrix.yaml` đã khai báo,
-không phải lỗi cài đặt.
+`lab28.gateway.request`, `lab28.api.ingest`, `lab28.kafka.produce`,
+`lab28.kafka.consume`, `lab28.airflow.dag`, `lab28.spark.delta_merge`,
+`lab28.api.ask`, `lab28.feast.get_online_features`, `lab28.qdrant.query`,
+`lab28.mlflow.resolve_release`, `lab28.vllm.chat_completion`.
+
+Một trace đi liền từ gateway, qua API, Kafka, Airflow, Spark, Feast, Qdrant, MLflow tới
+vLLM. Trước khi nối được vLLM thì trace chỉ đạt 6/11, vì năm span còn lại đều nằm trên
+đường `/ask` — đúng như thiết kế ở `pipeline.py`: inference là dependency **duy nhất
+không có degraded path**.
+
+Nhánh LangSmith của IP10: **UNVERIFIED** — không có `LANGSMITH_API_KEY`. Đây là gate
+theo môi trường mà `contracts/integration-matrix.yaml` đã khai báo sẵn.
 
 ## Bằng chứng cho phần tự làm
 
