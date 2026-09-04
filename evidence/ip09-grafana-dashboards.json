@@ -1,0 +1,10 @@
+{
+  "provisioned_files": [
+    "platform-overview.json"
+  ],
+  "dashboards_in_grafana": [
+    {
+      "error": "HTTPError: HTTP Error 401: Unauthorized"
+    }
+  ]
+}

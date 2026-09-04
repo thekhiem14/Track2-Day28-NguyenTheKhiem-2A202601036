@@ -1,0 +1,111 @@
+{
+  "source": "kafka topic data.raw, read with a non-committing consumer group",
+  "sample_count": 3,
+  "samples": [
+    {
+      "topic": "data.raw",
+      "partition": 2,
+      "offset": 0,
+      "key": "doc-ip02-airflow",
+      "headers": {
+        "traceparent": "00-4a204a0889c58cce0e7804fba0d9c659-5424c951c24060f2-01",
+        "idempotency-key": "doc-ip02-airflow",
+        "schema_version": "1"
+      },
+      "has_traceparent": true,
+      "has_idempotency_key": true,
+      "key_equals_idempotency_header": true,
+      "value": {
+        "schema_version": "1",
+        "event_id": "f8688e8cf5134989b1b5425bf6833e06",
+        "idempotency_key": "doc:doc-ip02-airflow:9b7e8bc4f2409294439202f5d734c323",
+        "entity_id": "doc-ip02-airflow",
+        "occurred_at": "2026-09-03T16:57:40.479014Z",
+        "producer": "lab28-api",
+        "traceparent": "00-4a204a0889c58cce0e7804fba0d9c659-f2ecfbd67e64b346-01",
+        "payload": {
+          "kind": "document",
+          "doc_id": "doc-ip02-airflow",
+          "title": "IP02 — Airflow điều phối đường ống dữ liệu",
+          "text": "Airflow 3 chịu trách nhiệm điều phối luồng từ Kafka xuống Delta. DAG chạy theo lịch, đọc lô sự kiện từ data.raw, gọi job Spark để ghi vào lakehouse, rồi phát một asset event trên asset lab28://delta/feedback. Asset event là tín hiệu cho các DAG phía sau biết dữ liệu mới đã sẵn sàng, thay vì phải đoán bằng cách hẹn giờ. Tiến trình phục vụ không chứa mã điều phối: Airflow chạy trong image riêng của nó.",
+          "locale": "vi",
+          "tags": [
+            "ip02",
+            "airflow",
+            "orchestration"
+          ]
+        }
+      }
+    },
+    {
+      "topic": "data.raw",
+      "partition": 2,
+      "offset": 1,
+      "key": "doc-ip08-gateway",
+      "headers": {
+        "traceparent": "00-f37b29ddc349f71b3de5e59fb75cd003-23b889a14b0e2748-01",
+        "idempotency-key": "doc-ip08-gateway",
+        "schema_version": "1"
+      },
+      "has_traceparent": true,
+      "has_idempotency_key": true,
+      "key_equals_idempotency_header": true,
+      "value": {
+        "schema_version": "1",
+        "event_id": "b50253a4a7ee4c1293d8ce79d873a386",
+        "idempotency_key": "doc:doc-ip08-gateway:e4dfa038a8a56b7b26089da6529bfa8a",
+        "entity_id": "doc-ip08-gateway",
+        "occurred_at": "2026-09-03T16:57:40.766669Z",
+        "producer": "lab28-api",
+        "traceparent": "00-f37b29ddc349f71b3de5e59fb75cd003-045c7740ba980ebe-01",
+        "payload": {
+          "kind": "document",
+          "doc_id": "doc-ip08-gateway",
+          "title": "IP08 — Envoy là cổng vào có chính sách",
+          "text": "Envoy đứng trước API và thực thi chính sách trước khi yêu cầu chạm vào bất kỳ phụ thuộc nào: giới hạn tốc độ trả về 429, gắn header x-request-id để truy vết, và loại bỏ pod trả về 503 ở /ready ra khỏi vòng luân chuyển. Nhờ đó một pod đang hỏng sẽ ngừng nhận lưu lượng thay vì trả lỗi cho người dùng.",
+          "locale": "vi",
+          "tags": [
+            "ip08",
+            "envoy",
+            "gateway"
+          ]
+        }
+      }
+    },
+    {
+      "topic": "data.raw",
+      "partition": 2,
+      "offset": 2,
+      "key": "doc-degraded-policy",
+      "headers": {
+        "traceparent": "00-daf74292e2908a3fbb07fbf9e0fabb45-dea07c07865ff84f-01",
+        "idempotency-key": "doc-degraded-policy",
+        "schema_version": "1"
+      },
+      "has_traceparent": true,
+      "has_idempotency_key": true,
+      "key_equals_idempotency_header": true,
+      "value": {
+        "schema_version": "1",
+        "event_id": "66c703e330b64c7d867407535b883308",
+        "idempotency_key": "doc:doc-degraded-policy:68db776fa8b109d09fe8554e0f85cc7e",
+        "entity_id": "doc-degraded-policy",
+        "occurred_at": "2026-09-03T16:57:41.006599Z",
+        "producer": "lab28-api",
+        "traceparent": "00-daf74292e2908a3fbb07fbf9e0fabb45-5f2d6bba009f4f7a-01",
+        "payload": {
+          "kind": "document",
+          "doc_id": "doc-degraded-policy",
+          "title": "Suy giảm phải luôn hiển thị",
+          "text": "Nền tảng cho phép trả lời trên đường suy giảm khi Feast hoặc Qdrant không sẵn sàng, nhưng bắt buộc phải ghi lý do vào phần bằng chứng và tăng bộ đếm lab28_degraded_responses_total. Đặt biến môi trường LAB28_ALLOW_DEGRADED thành false sẽ chuyển sang chế độ thất bại đóng: yêu cầu bị từ chối thay vì được trả lời trên đường thiếu dữ liệu.",
+          "locale": "vi",
+          "tags": [
+            "degraded",
+            "policy",
+            "serving"
+          ]
+        }
+      }
+    }
+  ]
+}

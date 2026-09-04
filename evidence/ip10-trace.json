@@ -1,0 +1,65 @@
+{
+  "backend": "http://localhost:16686",
+  "services": [
+    "lab28-api",
+    "lab28-gateway",
+    "jaeger-all-in-one",
+    "lab28-airflow"
+  ],
+  "required_spans": [
+    "lab28.airflow.dag",
+    "lab28.api.ask",
+    "lab28.api.ingest",
+    "lab28.feast.get_online_features",
+    "lab28.gateway.request",
+    "lab28.kafka.consume",
+    "lab28.kafka.produce",
+    "lab28.mlflow.resolve_release",
+    "lab28.qdrant.query",
+    "lab28.spark.delta_merge",
+    "lab28.vllm.chat_completion"
+  ],
+  "best_trace": {
+    "trace_id": "463242b83527480aa428478ce64a6c04",
+    "queried_via_service": "lab28-gateway",
+    "span_count": 34,
+    "required_spans_present": [
+      "lab28.airflow.dag",
+      "lab28.api.ask",
+      "lab28.api.ingest",
+      "lab28.feast.get_online_features",
+      "lab28.gateway.request",
+      "lab28.kafka.consume",
+      "lab28.kafka.produce",
+      "lab28.mlflow.resolve_release",
+      "lab28.qdrant.query",
+      "lab28.spark.delta_merge",
+      "lab28.vllm.chat_completion"
+    ],
+    "required_spans_missing": [],
+    "all_span_names": [
+      "POST",
+      "POST /api/v1/ask",
+      "POST /api/v1/ask http receive",
+      "POST /api/v1/ask http send",
+      "POST /api/v1/documents",
+      "POST /api/v1/documents http receive",
+      "POST /api/v1/documents http send",
+      "POST /api/v1/feedback",
+      "POST /api/v1/feedback http receive",
+      "POST /api/v1/feedback http send",
+      "lab28.airflow.dag",
+      "lab28.api.ask",
+      "lab28.api.ingest",
+      "lab28.feast.get_online_features",
+      "lab28.gateway.request",
+      "lab28.kafka.consume",
+      "lab28.kafka.produce",
+      "lab28.mlflow.resolve_release",
+      "lab28.qdrant.query",
+      "lab28.spark.delta_merge",
+      "lab28.vllm.chat_completion"
+    ]
+  },
+  "langsmith": "UNVERIFIED — no LANGSMITH_API_KEY in this environment"
+}

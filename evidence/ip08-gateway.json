@@ -1,0 +1,20 @@
+{
+  "listener": "http://localhost:8080",
+  "accepted": {
+    "path": "/health",
+    "status": 200,
+    "x_request_id": "ed54a59e-746a-9712-98b2-f41100ac55da",
+    "x_envoy_decorator_operation": "lab28.gateway.request",
+    "server": "envoy",
+    "body": "{\"status\":\"alive\",\"service\":\"lab28-api\"}"
+  },
+  "rate_limited": {
+    "path": "/api/v1/feedback",
+    "status": 429,
+    "x_request_id": "5bba5ffb-f452-9f62-b4cb-9025c0b917eb",
+    "x_envoy_decorator_operation": "lab28.gateway.request",
+    "server": "envoy",
+    "body": "local_rate_limited"
+  },
+  "admin_ready": "LIVE"
+}

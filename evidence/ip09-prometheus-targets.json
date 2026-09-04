@@ -1,0 +1,82 @@
+{
+  "targets": [
+    {
+      "job": "lab28-airflow-batch",
+      "instance": "pushgateway:9091",
+      "health": "up",
+      "last_error": null
+    },
+    {
+      "job": "lab28-api",
+      "instance": "api:8000",
+      "health": "up",
+      "last_error": null
+    },
+    {
+      "job": "lab28-collector",
+      "instance": "otel-collector:8888",
+      "health": "up",
+      "last_error": null
+    },
+    {
+      "job": "lab28-feast",
+      "instance": "feast:8000",
+      "health": "up",
+      "last_error": null
+    },
+    {
+      "job": "lab28-gateway",
+      "instance": "gateway:9901",
+      "health": "up",
+      "last_error": null
+    },
+    {
+      "job": "lab28-kafka",
+      "instance": "kafka-exporter:9308",
+      "health": "up",
+      "last_error": null
+    },
+    {
+      "job": "lab28-mlflow",
+      "instance": "api:8000",
+      "health": "up",
+      "last_error": null
+    },
+    {
+      "job": "lab28-prometheus",
+      "instance": "prometheus:9090",
+      "health": "up",
+      "last_error": null
+    },
+    {
+      "job": "lab28-qdrant",
+      "instance": "qdrant:6333",
+      "health": "up",
+      "last_error": null
+    },
+    {
+      "job": "lab28-vllm-optional",
+      "instance": "host.docker.internal:8001",
+      "health": "down",
+      "last_error": "Get \"http://host.docker.internal:8001/metrics\": dial tcp 192.168.65.254:8001: connect: connection refused"
+    }
+  ],
+  "up_count": 9,
+  "total_count": 10,
+  "alert_rules": [
+    {
+      "group": "lab28-slo",
+      "alert": "Lab28ApiUnavailable",
+      "state": "inactive",
+      "severity": "critical",
+      "expr": "up{job=\"lab28-api\"} == 0"
+    },
+    {
+      "group": "lab28-slo",
+      "alert": "Lab28HighErrorRatio",
+      "state": "inactive",
+      "severity": "warning",
+      "expr": "sum(rate(lab28_requests_total{status=~\"5..\"}[5m])) / clamp_min(sum(rate(lab28_requests_total[5m])), 1) > 0.05"
+    }
+  ]
+}

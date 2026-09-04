@@ -4,5 +4,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
-evidence/
+# evidence/ duoc nop theo SUBMISSION.md muc 1-2 nen khong ignore.
+# Van chan state runtime nang o .lab28/ ben tren.
 readiness-report.json
+
+# URL tunnel tam thoi cho IP07 - khong bao gio commit
+.env.local
